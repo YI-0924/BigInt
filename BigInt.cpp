@@ -97,23 +97,34 @@ BigInt BigInt::operator*(const BigInt rhs) const
 
 }
 
-// 以分數輸出，最後的答案再轉為小數(下100位)
+//  (1 / 3) * 3 = 1 -> 先乘後除
 BigInt BigInt::operator/(const BigInt rhs) const	// (digit - '0') / (rhs.digit - '0') -> A / B
 {
 	BigInt c;
-	bool ansType;		//整/整=整  整/整=小  整/小=整  小/整=整  整/小=小  小/整=小  小/小=小  小/小=整
+	bool ansType;		
 	bool ansSign;		
 	string ansDigits = "";
 	int ansDotPlace;
 
 	int lenA = digits.size();
 	int lenB = rhs.digits.size();
-	int dLen;
-	string trans = "0";		// string to int is -trans ; int to string is +trans
+
 	string A = digits;
 	string B = rhs.digits;
 	string tempStr = A;
 	string remain;
+
+	if (A == "0") {
+		ansDigits = "0";
+		c.setDigits(ansDigits);
+		return c;
+	}
+	if (B == "0") {
+		ansDigits = "default";		// 錯誤
+		c.setDigits(ansDigits);
+		return c;
+	}
+
 
 	if (sign == 0 && rhs.sign == 0) {
 		ansSign = 0;		//正數
@@ -122,29 +133,139 @@ BigInt BigInt::operator/(const BigInt rhs) const	// (digit - '0') / (rhs.digit -
 		ansSign = 1;		//負數
 	}
 
-	//============ A >= B =============
-	dLen = lenA - lenB;
 
-	// let lenA = lenB. For example : 12345678 / 234567 -> 12345678 / 00234567
-	/*for (int i = lenA - 1; i >= 0; i--) {
-		if (i >= dLen) {
-			B[i] = B[i - dLen];
+	if (lenA > lenB) {
+		// if 12,345,678 / 234,567 then ansDigits = 52 ; remain 148,194
+		while (tempStr = substraction(tempStr, B) >= '0') {		// A - B = tempStr
+			ansDigits = addition(ansDigits, 1);			
+		}
+	}
+	else if (lenA == lenB) {
+		bool chkAB = false;		// chkAB = false if A < B
+		int dotA;
+		int dotB;
+		for (int i = 0; i < lenA; i++) {
+			if (A[i] == '.') {
+				dotA = i;
+			}
+			if (B[i] == '.') {
+				dotB = i;
+			}
+		}
+		if (dotA > dotB) {
+			chkAB = true;
+		}
+		else {		// dotA == dotB
+			for (int i = 0; i < lenA; i++) {
+				if (A[i] - '0' > B[i] - '0') {
+					chkAB = true;
+					break;
+				}
+				else if (A[i] - '0' < B[i] - '0') {
+					break;
+				}
+			}
+		}
+		if (chkAB == true) {
+			//if 23,456,789 / 12,345,678 then ansDigits = 1 ; remain 11,111,111
+			while (tempStr = substraction(tempStr, B) >= '0') {		// tempStr = A - B
+				ansDigits = addition(ansDigits, 1);
+			}
+		}
+		else {		// chk = false ; lenA = lenB ; A < B
+			ansDigits += "0.";
+			A += "0";
+			// now A > B
+			tempStr = A;
+			while (tempStr = substraction(tempStr, B) >= '0') {		// A - B = tempStr
+				//ansDigits 小數位數接下去
+			}
+		}
+	}
+	else {		// lenA < lenB ; A < B
+		ansDigits += "0.";
+		A += "0";
+		int countZero = 0;
+		if (A[0] > B[0]) {		// for example : 234567 / 12345678 = 0.0189999286
+			countZero = lenB - lenA - 1;
+			while (countZero > 0) {
+				ansDigits += "0";
+				A += "0";
+				countZero--;
+			}
+			// now A > B
+			tempStr = A;
+			while (tempStr = substraction(tempStr, B) >= '0') {		// A - B = tempStr
+				//ansDigits 小數位數接下去
+			}
+		}
+		else if (A[0] < B[0]) {		// for example : 123456 / 23456789 = 0.0052631245
+			countZero = lenB - lenA;
+			while (countZero > 0) {
+				ansDigits += "0";
+				A += "0";
+				countZero--;
+			}
+			// now A > B
+			tempStr = A;
+			while (tempStr = substraction(tempStr, B) >= '0') {		// A - B = tempStr
+				//ansDigits 小數位數接下去
+			}
+		}
+	}
+
+	// 有餘數 -> ansDigits以小數下100位回傳
+	if (tempStr != "0") {
+		remain = tempStr;		// ansDigits += remain / B
+		ansType = 1;		//小數
+		ansDigits += ".";
+		// remain < B ; lenRemain = or < lenB 
+		if (int lenRemain = remain.length() == lenB) {
+			remain += "0";
+			// now remain > B
+			while (remain = substraction(remain, B) >= '0') {		// A - B = tempStr
+				//ansDigits 小數位數接下去
+			}
 		}
 		else {
-			B[i] = '0';
+			remain += "0";
+			int countZero = 0;
+			lenRemain = remain.length();
+			if (remain[0] > B[0]) {		// for example : 234567 / 12345678 = 0.0189999286
+				countZero = lenB - lenRemain - 1;
+				while (countZero > 0) {
+					ansDigits += "0";
+					remain += "0";
+					countZero--;
+				}
+				// now remain > B
+				while (remain = substraction(remain, B) >= '0') {		// A - B = tempStr
+					//ansDigits 小數位數接下去
+				}
+			}
+			else if (remain[0] < B[0]) {		// for example : 123456 / 23456789 = 0.0052631245
+				countZero = lenB - lenRemain;
+				while (countZero > 0) {
+					ansDigits += "0";
+					remain += "0";
+					countZero--;
+				}
+				// now remain > B
+				while (remain = substraction(remain, B) >= '0') {		// A - B = tempStr
+					//ansDigits 小數位數接下去
+				}
+			}
 		}
-	}*/
-	
-	//use the substraction and addition to count ansDigits and remainder
-	while (tempStr = substraction(tempStr, B) >= '0') {		// A - B = tempStr
-		ansDigits = addition(ansDigits, 1);			// if 12345678 / 234567 then ansDigits = 52
+
+		for (int i = 0; i < ansDigits.length(); i++) {
+			if (ansDigits[i] == '.') {
+				ansDotPlace = i;
+				break;
+			}
+		}
 	}
 
-	// 是否有餘數
-	if (tempStr != "0") {
-		remain = tempStr;		// if 12345678 / 234567 then remain = 148194
-		ansType = 1;		//小數 -> 應該以分數回傳
-	}
+	// 沒餘數
 	else {
 		ansType = 0;		//整數
 		ansDotPlace = 0;
@@ -152,7 +273,7 @@ BigInt BigInt::operator/(const BigInt rhs) const	// (digit - '0') / (rhs.digit -
 
 	c.setType(ansType);
 	c.setSign(ansSign);
-	c.setDigits(ansDigits);
+	c.setDigits(ansDigits);			// how to return in decimal ?
 	c.setDotPlace(ansDotPlace);
 	return c;
 
