@@ -11,6 +11,12 @@ BigInt::BigInt(bool t, string n, string d)
 	this->name = n;
 	this->digits = d;
 	this->dotPlace = digits.find('.');
+	if (digits[0] == '-') {
+		this->sign = 1;
+	}
+	else {
+		this->sign = 0;
+	}
 }
 
 void BigInt::process(string s)
@@ -723,6 +729,7 @@ void BigInt::operator=(const BigInt& rhs)
 	//name不用改
 	digits = rhs.digits;
 	dotPlace = rhs.dotPlace;
+	sign = rhs.sign;
 }
 
 ostream& operator<<(ostream& strm, const BigInt& now)
