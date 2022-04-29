@@ -624,7 +624,7 @@ string subtraction(string A, string B)		// 都會是正-正 (但可能有小數)
 	int dot;
 	int digit1 = 0, digit2 = 0;
 	int base = '0';
-	string ans;
+	string ans = "";
 	char ansSign;
 
 	if (dot1 > dot2) {		// A > B (小數 - 小數) eg: 123.45 - 67.891
@@ -695,10 +695,10 @@ string subtraction(string A, string B)		// 都會是正-正 (但可能有小數)
 	int borrow = 0;
 
 	for (int i = 0; i < len1; i++) {
-		ans[i] += (A[i] - '0') - (B[i] - '0') - borrow;
+		ans[i] = (ans[i] - '0') + ((A[i] - '0') - (B[i] - '0') - borrow) + '0';
 		if (ans[i] - '0' < 0) {
 			borrow = 1;
-			ans[i] += (10 + '0');
+			ans[i] = (ans[i] - '0') + 10 + '0';
 		}
 		else {
 			borrow = 0;
