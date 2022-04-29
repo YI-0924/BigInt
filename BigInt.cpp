@@ -10,7 +10,7 @@ BigInt::BigInt(bool t, string n, string d)
 	this->type = t;
 	this->name = n;
 	this->digits = d;
-	//dotPlace
+	this->dotPlace = digits.find('.');
 }
 
 void BigInt::process(string s)
