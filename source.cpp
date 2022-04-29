@@ -35,6 +35,7 @@ int main()
 
 	string a = "1.5 + 3 * ( -(-5) )";
 	//getline
-	BigInt ans(a);
+	BigInt ans;
+	ans.process(a);
 	cout << ans;
 }
