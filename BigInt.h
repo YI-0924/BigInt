@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string> //getline
 #include <vector>
+#include<cmath>
 
 using namespace std;
 
@@ -25,6 +26,8 @@ public:
 	BigInt operator-(const BigInt rhs) const;
 	BigInt operator*(const BigInt rhs) const;
 	BigInt operator/(const BigInt rhs) const;
+	//friend string addition(string A, string B);
+	//friend string subtraction(string A, string B);
 	void operator=(const BigInt&);
 
 	void setType(bool t) { type = t; }
